@@ -40,8 +40,7 @@ Let's run a transaction. First define a 'bank', which is a map from `String`s (a
 > transfer recipient src qty bank = do
 >   modifyIORef (bank ! src)       (subtract qty)
 >   balance1 <- balance bank
->   putStrLn $ "In the middle of a transaction .. balance = "
->            <> (show balance1)
+>   putStrLn [qc|In the middle of a transaction .. balance = {show balance1}|]
 >   threadDelay 1
 >   modifyIORef (bank ! recipient) (add qty)
 >
