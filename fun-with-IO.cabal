@@ -17,9 +17,7 @@ executable ioref
   main-is:             IORef.lhs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
-
                      , containers
-
                      , interpolatedstring-perl6
 
 executable mvar
@@ -27,9 +25,7 @@ executable mvar
   main-is:             MVar.lhs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
-
                      , containers
-
                      , interpolatedstring-perl6
 
 executable stm
@@ -38,9 +34,6 @@ executable stm
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
                      , stm
-
                      , containers
-
                      , interpolatedstring-perl6
-
 
