@@ -1,2 +1,2 @@
 #!/bin/sh
-stack build --fast --file-watch --exec "fun-with-IO"
+stack build --ghc-options=-threaded --fast --file-watch --exec "fun-with-IO"
