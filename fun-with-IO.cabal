@@ -32,4 +32,15 @@ executable mvar
 
                      , interpolatedstring-perl6
 
+executable stm
+  hs-source-dirs:      src
+  main-is:             STM.lhs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5
+                     , stm
+
+                     , containers
+
+                     , interpolatedstring-perl6
+
 
