@@ -39,9 +39,12 @@ Let's run a transaction. First define a 'bank', which is a map from `String`s (a
 > transfer :: String -> String -> Int -> Bank -> IO ()
 > transfer recipient src qty bank = do
 >   modifyIORef (bank ! src)       (subtract qty)
->   balance1 <- balance bank
->   putStrLn [qc|In the middle of a transaction .. balance = {show balance1}|]
->   threadDelay 1
+
+There is a race condition here. If an external thread accesses the bank during this time it will see an inconsistent view of the bank's balance.
+
+Emulate a thread-delaying operation to try to induce a race condition.
+
+>   threadDelay 10
 >   modifyIORef (bank ! recipient) (add qty)
 >
 >   where

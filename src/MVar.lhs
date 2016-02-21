@@ -11,7 +11,7 @@
 
 > import           Text.InterpolatedString.Perl6 (qc)
 
-This is an example using IORef.
+This is an example using MVar. MVars are Haskell's answer to locks, and they behave similarly. An MVar can be thought of as a box, which can be empty or full. 'takeMVar' is like acquiring a lock, 'putMVar' is like releasing a lock.
 
 > mvar :: Int -> String -> IO ()
 > mvar delay str = do
@@ -22,7 +22,7 @@ This is an example using IORef.
 >  forkIO $ do
 >    putMVar ref (reverse str)
 
-Let's delay `n` microseconds. Depending on the scheduler we should get different results.
+Let's delay `n` microseconds. Now that we are using MVar, the forked thread cannot put anything into the mvar until it has been emptied. This function will always print the same thing no matter the delay.
 
 >  threadDelay delay
 >  takeMVar ref >>= putStrLn
@@ -33,6 +33,9 @@ Let's run a transaction. First define a 'bank', which is a map from `String`s (a
 >
 > balance :: Bank -> IO Int
 > balance bank = do
+
+To calculate the balance, we lock every single account in the bank, run a sum function to calculate the bank's overall balance, then unlock every account in the bank.
+
 >   accounts <- mapM takeMVar bank
 >   let ret = sum $ Map.elems accounts
 >   mapM (uncurry putMVar) $ Map.intersectionWith (,) bank accounts
@@ -40,6 +43,11 @@ Let's run a transaction. First define a 'bank', which is a map from `String`s (a
 >
 > transfer :: String -> String -> Int -> Bank -> IO ()
 > transfer recipient src qty bank = do
+
+This time, let's wrap the transaction in a pair of locks. That way when another thread tries to access the accounts to read their memory, they should always see a consistent view.
+
+.. Unfortunately this code is not correct either, it will result in a deadlock. Can you spot the mistake?
+
 >   modifyMVar_ (bank ! src) $ \srcBalance -> do
 >     threadDelay 1
 >     modifyMVar_ (bank ! recipient) $ \dstBalance -> do

@@ -11,20 +11,34 @@
 
 > import           Text.InterpolatedString.Perl6 (qc)
 
-This is an example using STM.
+This is an example using STM. STM allows one to run concurrent operations safely using the `atomically` verb. In the STM monad, one can compose inter-thread mutable operations, and then in the outer block use the `atomically` verb to perform the STM actions. The executing thread will always see a consistent view of memory (in the sense that other `atomically` running transactions will appear either complete-or-not-started).
 
-Let's run a transaction. First define a 'bank', which is a map from `String`s (account names) to balances.
+Skipping the "Hello, world!" pleasantries, let's run a transaction. First define a 'bank', which is a map from `String`s (account names) to balances.
 
 > type Bank = Map String (TVar Int)
 >
 > balance :: Bank -> IO Int
 > balance bank = atomically $ do
+
+This looks similar to the IORef code. The difference is that it is correct, it will not read the memory contents in the middle of another transaction.
+
 >   accounts <- mapM readTVar bank
 >   return $ sum $ Map.elems accounts
->
+
 > transfer :: String -> String -> Int -> Bank -> IO ()
-> transfer recipient src qty bank = atomically $ do
+> transfer recipient src qty bank = do
+>  clock <- registerDelay 1
+
+This code also looks similar to the IORef code, but it is correct. The entire operation is atomic, other threads will not see an inconsistent view of the bank's balance.
+
+>  atomically $ do
 >   modifyTVar (bank ! src)       (subtract qty)
+
+Emulate some thread-delaying action to try to induce a race condition.
+
+>   delayed <- readTVar clock
+>   if (not delayed) then retry else return ()
+
 >   modifyTVar (bank ! recipient) (add qty)
 >  where add = flip (+)
 
@@ -56,9 +70,7 @@ Start a worker thread to poll the bank accounts and see if the balance ever drop
 > main :: IO ()
 > main = do
 
-Let's run the first example!
-
-Let's run the second example!
+Let's run the example!
 
 >  unbusted_transaction
 
